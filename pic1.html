@@ -1,0 +1,91 @@
+<!DOCTYPE>
+<html>
+<head>
+<meta charset="utf-8"> 
+</head>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var links=[];
+var nodes=[];
+
+d3.csv ( "g1.csv", function(error,datacsv){
+	if ( error ){
+		console.log(error);
+	}
+	console.log(datacsv);
+	datacsv.forEach ( function(value){
+			links.push ( { source: value.start , target: value.end }); 
+			nodes.push ( { name : value.type } );
+			});
+}); 
+	var width = 700;
+	var height = 800;
+	//console.log(links);
+	//console.log(nodes);
+	var force = d3.layout.force()
+				         .nodes(nodes)
+						 .links(links)
+						 .size([width,height])
+						 .linkDistance(90)
+						 .charge(-400);
+	force.start();
+	console.log(links);
+	console.log(nodes);
+	var svg = d3.select("body")
+				.append("svg")
+				.attr("width",width)
+				.attr("height",height);
+
+	var color = d3.scale.category20();
+	
+	var lines= svg.selectAll(".forceLine")
+				  .data(links)
+				  .enter()
+				  .append("line")
+				  .attr("class","forceLine");
+	
+	var circles = svg.selectAll(".forceCircle")
+					 .data(nodes)
+					 .enter()
+					 .append("circle")
+					 .attr("class" , "forceCircle")
+					 .style("fill",function(d,i){
+							 return color(i);
+							 })
+					 .call(force.drag);
+	
+	var texts = svg.selectAll(".forceText")
+				   .data(nodes)
+				   .enter()
+				   .append("text")
+				   .attr("class","forceText")
+				   .attr("x",function(d){ return d.x })
+				   .attr("y",function(d){ return d.y })
+				   .attr("dy", ".3em")
+				   .text(function(d){ return d.name; } );
+
+	force.on("tick", function(){
+			lines.attr ( "x1",function(d){ return d.source.x; });
+			lines.attr ( "y1",function(d){ return d.source.y; });
+			lines.attr ( "x2",function(d){ return d.target.x; });
+			lines.attr ( "y2",function(d){ return d.target.y; });
+
+			circles.attr("cx",function(d){ return d.x; });
+			circles.attr("cy",function(d){ return d.y; });
+
+			texts.attr("x",function(d){ return d.x } );
+			texts.attr("y",function(d){ return d.y } );
+			});
+	
+	force.on("start", function(){
+			console.log("move start...");
+			});
+
+	force.on("end",function(){
+			console.log("move end...");
+			});
+	</script>
+</body>
+</html>
